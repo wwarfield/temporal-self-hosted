@@ -1,0 +1,10 @@
+# Contains secrets & environment variables specfic to
+# developer's setup
+.envrc
+
+# OTEL config with substituted values. This can contain secrets for
+# Grafana Instance
+applications/otel-collector/otel-local-config.yaml
+
+tools/migrations/scratch-schema/**
+tools/.env/**

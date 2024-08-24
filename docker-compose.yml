@@ -1,0 +1,125 @@
+
+services:
+
+  # Persistence Store for Tracking workflow State
+  postgresql:
+    container_name: postgresql
+    image: postgres:${POSTGRESQL_VERSION}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_USER: temporal
+      POSTGRES_DB: temporal
+    volumes:
+      - /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - temporal-network
+
+  # Temporal Server
+  temporal-server:
+    container_name: temporal-server
+    # We are using our own Dockerfile so that we can tweak
+    # the configuration more easily and control our dependencies better
+    build:
+      context: applications/temporal-server
+      dockerfile: server.Dockerfile
+      args:
+        - TARGETARCH=${TEMPORAL_TARGETARCH}
+        - TEMPORAL_VERSION=${TEMPORAL_VERSION}
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgresql
+    volumes:
+      - ./dynamicconfig:/etc/temporal/config/dynamicconfig
+    depends_on:
+      - postgresql
+    ports:
+      - 7233:7233 # frontend endpoint
+      - 4333:4333 # Prometheus endpoint
+    networks:
+      - temporal-network
+
+
+  # Temporal Admin Tools - Only provides tooling for db setup & cluster management
+  temporal-admin-tools:
+    container_name: temporal-admin-tools
+    build:
+      context: applications/temporal-admin-tools
+      dockerfile: admin-tools.Dockerfile
+      args:
+        - TARGETARCH=${TEMPORAL_TARGETARCH}
+        - TEMPORAL_ADMINTOOLS_VERSION=${TEMPORAL_ADMINTOOLS_VERSION}
+    stdin_open: true
+    tty: true
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    depends_on:
+      - postgresql
+    networks:
+      - temporal-network
+
+  flyway-migrations:
+    container_name: flyway-migrations
+    image: flyway/flyway:${FLYWAY_VERSION}
+    command:
+      - -url=jdbc:postgresql://postgresql/
+      - -user=temporal
+      - -password=temporal
+      - migrate
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./applications/flyway/sql-migrations:/flyway/sql
+    depends_on:
+      - postgresql
+    networks:
+      - temporal-network
+
+  # Temporal GUI - provides workflow execution management functionality
+  temporal-ui:
+    container_name: temporal-ui
+    image: temporalio/ui:${TEMPORAL_UI_VERSION}
+    environment:
+      - TEMPORAL_ADDRESS=temporal-server:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+    ports:
+      - 8080:8080
+    depends_on:
+      - temporal-server
+    networks:
+      - temporal-network
+
+  # OTEL Collector for metrics emitted from temporal-server
+  server-otel-collector:
+    container_name: server-otel-collector
+    image: otel/opentelemetry-collector-contrib:latest
+    environment:
+      - OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+    command:
+      - --config=otel-local-config.yaml
+      - --feature-gates=-component.UseLocalHostAsDefaultHost
+    volumes:
+      - ./applications/otel-collector/otel-local-config.yaml:/otel-local-config.yaml
+    ports:
+      - 4317:4317
+      - 8888:8888
+    depends_on:
+      - temporal-server
+    networks:
+      - temporal-network
+
+networks:
+  temporal-network:
+    driver: bridge
+    name: temporal-network
