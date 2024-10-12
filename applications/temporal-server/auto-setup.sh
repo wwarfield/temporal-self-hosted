@@ -1,11 +1,25 @@
 #!/bin/bash
 
+register_namespace() {
+    name=$1
+    retention_period=$2
+    description=$3
 
-register_default_namespace() {
-  temporal operator namespace create \
-    "default" \
-    --retention "3d" \
-    --description "default namespace"
+    if temporal operator namespace list | grep -q "${name}"; then
+        echo "Namespace ${name} Already Registered, Updating Namespace"
+        temporal operator namespace update \
+            --namespace "${name}" \
+            --retention "${retention_period}" \
+            --description "${description}"
+        echo "Namespace Updated"
+    else
+        echo "Creating Namespace ${name}"
+        temporal operator namespace create \
+            --namespace "${name}" \
+            --retention "${retention_period}" \
+            --description "${description}"
+        echo "Namespace ${name} Created"
+    fi
 }
 
 setup_server() {
@@ -17,7 +31,8 @@ setup_server() {
     done
     echo "Temporal server started."
 
-    register_default_namespace
+    # register_default_namespace
+    register_namespace "default" "3d" "default namespace"
 
     echo "Auto Server Setup complete"
 }
