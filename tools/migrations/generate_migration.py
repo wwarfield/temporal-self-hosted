@@ -12,7 +12,7 @@ from textwrap import dedent
 
 SCRATCH_DIR = "./tools/migrations/scratch-schema"
 FLYWAY_MIGRATION_DIR = "./applications/flyway/sql-migrations"
-ADMIN_TOOLS_VERSION = "1.24.2-tctl-1.18.1-cli-1.0.0"
+ADMIN_TOOLS_VERSION = os.environ['TEMPORAL_ADMINTOOLS_VERSION']
 version_directory = f"{SCRATCH_DIR}/{ADMIN_TOOLS_VERSION}"
 
 DEFAULT_SCHEMA_NAME = "temporal_default"
