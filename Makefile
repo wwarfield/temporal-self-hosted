@@ -14,7 +14,7 @@ tools-venv: ## Creates Python Virtual Env for tooling scripts
 install-tool-dependencies: ## Installs tool dependencies
 	(cd tools; . .env/bin/activate; pip install -r requirements.txt)
 
-build-temporal-services: gen-otel-config ## Build all temporal services
+build-temporal-services: ## Build all temporal services
 	docker compose build
 
 #######################################################
@@ -37,11 +37,17 @@ migrate-db: ## Runs flyway db migrations against Postgres
 init-postgres-db:  ## Starts Postgres Database & runs database migrations
 	docker compose up -d --wait postgresql
 
-init-temporal-services: init-postgres-db migrate-db ## Start all temporal services
+init-temporal-services: init-postgres-db migrate-db ## Start supporting temporal services
 	docker compose up server-otel-collector temporal-server temporal-ui
 
 start-native-worker: ## Starts Native Temporal worker
 	cd applications/worker; poetry run temporal-worker
+
+start-docker-worker: ## Starts Temporal worker in docker
+	docker compose up worker
+
+start-all: ## Starts all docker services
+	docker compose up
 
 
 #######################################################

@@ -1,0 +1,10 @@
+
+temporal:
+
+  # Temporal Server Connection Settings
+  server:
+    # Hostname of temporal server/frontend Gateway
+    host: temporal-server
+
+    # Port Name of temporal server/frontend Gateway
+    port: 7233

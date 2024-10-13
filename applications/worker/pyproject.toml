@@ -9,6 +9,7 @@ readme = "README.md"
 python = "^3.10"
 temporalio = "^1.6.0"
 asyncio = "^3.4.3"
+envyaml = "^1.10.211231"
 
 
 [build-system]

@@ -48,6 +48,18 @@ services:
     networks:
       - temporal-network
 
+  # Worker - Temporal Worker that executes business logic
+  worker:
+    container_name: worker
+    build:
+      context: applications/worker
+    environment:
+      - PYYAML_CONFIG=worker/config/docker.yaml
+    depends_on:
+      - temporal-server
+    networks:
+      - temporal-network
+
   flyway-migrations:
     container_name: flyway-migrations
     image: flyway/flyway:${FLYWAY_VERSION}

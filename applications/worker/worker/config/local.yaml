@@ -1,0 +1,16 @@
+# Yaml Configuration file defines default configuration for several configurable
+# values that the application utilizes. There is one for each environment that this
+# application can be deployed to
+# The relevant config file should be set be defining the PYYAML_CONFIG environment variable
+
+# Additionally each value in the configuration file can be overriden by environment values when
+# necessary
+temporal:
+
+  # Temporal Server Connection Settings
+  server:
+    # Hostname of temporal server/frontend Gateway
+    host: localhost
+
+    # Port Name of temporal server/frontend Gateway
+    port: 7233

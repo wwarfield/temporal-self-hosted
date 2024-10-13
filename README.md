@@ -15,10 +15,12 @@ This repository provides documentation and specific examples on how some self ho
 - Temporal UI
 - Python Worker
 - OTEL Collector & Grafana
+
 ## Current Examples
 
 - Configuring Temporal Server Metrics
 - Integrating Migrations with Flyway
+- Upgrading Temporal Server
 
 ## Example TODO list
 
