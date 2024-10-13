@@ -48,26 +48,6 @@ services:
     networks:
       - temporal-network
 
-
-  # Temporal Admin Tools - Only provides tooling for db setup & cluster management
-  temporal-admin-tools:
-    container_name: temporal-admin-tools
-    build:
-      context: applications/temporal-admin-tools
-      dockerfile: admin-tools.Dockerfile
-      args:
-        - TARGETARCH=${TEMPORAL_TARGETARCH}
-        - TEMPORAL_ADMINTOOLS_VERSION=${TEMPORAL_ADMINTOOLS_VERSION}
-    stdin_open: true
-    tty: true
-    environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CLI_ADDRESS=temporal:7233
-    depends_on:
-      - postgresql
-    networks:
-      - temporal-network
-
   flyway-migrations:
     container_name: flyway-migrations
     image: flyway/flyway:${FLYWAY_VERSION}

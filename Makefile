@@ -30,10 +30,6 @@ generate-migrations: ## Generates flyway migrations from temporal admin
 migrate-db: ## Runs flyway db migrations against Postgres
 	docker compose up flyway-migrations
 
-migrate-scratch-db: ## Runs temporal admin migrations against Postgres
-	docker compose run --entrypoint "pg-migrate-db.sh" temporal-admin-tools
-
-
 #######################################################
 ######## Service Initialization Commands ##############
 #######################################################
