@@ -14,12 +14,6 @@ tools-venv: ## Creates Python Virtual Env for tooling scripts
 install-tool-dependencies: ## Installs tool dependencies
 	(cd tools; . .env/bin/activate; pip install -r requirements.txt)
 
-gen-otel-config: ## Generates OTEL configuration from template and environment variables
-	echo "# !!!! DO NOT EDIT !!!!!!!!!!!!!!!" > $(OTEL_APP_DIR)/otel-local-config.yaml
-	echo "# !!!! See Template File for Edits" >> $(OTEL_APP_DIR)/otel-local-config.yaml
-	echo "# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >> $(OTEL_APP_DIR)/otel-local-config.yaml
-	envsubst < $(OTEL_APP_DIR)/otel-template.yaml >> $(OTEL_APP_DIR)/otel-local-config.yaml
-
 build-temporal-services: gen-otel-config ## Build all temporal services
 	docker compose build
 
