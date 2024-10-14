@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 import multiprocessing
 
+from worker.temporal_client import get_temporal_client
 from worker.config.config import TemporalConfig
 from temporalio import activity, workflow
 from temporalio.client import Client
@@ -33,12 +34,7 @@ async def say_hello_activity(name: str) -> str:
 async def run_worker():
     print('start worker')
 
-    temporal_config = TemporalConfig()
-    temporal_url = f"{temporal_config.get_server_host()}:{temporal_config.get_server_port()}"
-    print(f"Connecting to {temporal_url} ...")
-
-    client = await Client.connect(temporal_url)
-    print('connected')
+    client = await get_temporal_client()
 
     worker = Worker(
         client,
