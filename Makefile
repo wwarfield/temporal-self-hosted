@@ -46,13 +46,16 @@ start-native-worker: ## Starts Native Temporal worker
 start-docker-worker: ## Starts Temporal worker in docker
 	docker compose up worker
 
-start-all: ## Starts all docker services
-	docker compose up
+start-all-detached: ## Starts all docker containers in detached mode
+	docker compose up -d
 
 
 #######################################################
 ######## Project Clean-Up Commands ####################
 #######################################################
+
+stop-all: ## Stop all docker containers
+	docker compose down
 
 wipe-generated-migrations: ## Delete all generated migrations
 	rm applications/flyway/sql-migrations/*.sql
