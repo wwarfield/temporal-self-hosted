@@ -48,23 +48,15 @@ services:
     networks:
       - temporal-network
 
-
-  # Temporal Admin Tools - Only provides tooling for db setup & cluster management
-  temporal-admin-tools:
-    container_name: temporal-admin-tools
+  # Worker - Temporal Worker that executes business logic
+  worker:
+    container_name: worker
     build:
-      context: applications/temporal-admin-tools
-      dockerfile: admin-tools.Dockerfile
-      args:
-        - TARGETARCH=${TEMPORAL_TARGETARCH}
-        - TEMPORAL_ADMINTOOLS_VERSION=${TEMPORAL_ADMINTOOLS_VERSION}
-    stdin_open: true
-    tty: true
+      context: applications/worker
     environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CLI_ADDRESS=temporal:7233
+      - PYYAML_CONFIG=worker/config/docker.yaml
     depends_on:
-      - postgresql
+      - temporal-server
     networks:
       - temporal-network
 
@@ -102,15 +94,17 @@ services:
   # OTEL Collector for metrics emitted from temporal-server
   server-otel-collector:
     container_name: server-otel-collector
-    image: otel/opentelemetry-collector-contrib:latest
+    build:
+      context: applications/otel-collector
+      args:
+        - OTEL_GRAFANA_INSTANCE_ID=${OTEL_GRAFANA_INSTANCE_ID}
+        - OTEL_GRAFANA_API_TOKEN=${OTEL_GRAFANA_API_TOKEN}
+        - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
     environment:
       - OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
       - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
     command:
-      - --config=otel-local-config.yaml
-      - --feature-gates=-component.UseLocalHostAsDefaultHost
-    volumes:
-      - ./applications/otel-collector/otel-local-config.yaml:/otel-local-config.yaml
+      - --config=otel-server-config-docker.yaml
     ports:
       - 4317:4317
       - 8888:8888

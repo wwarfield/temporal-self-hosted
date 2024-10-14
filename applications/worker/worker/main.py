@@ -1,14 +1,28 @@
 import asyncio
-import random
-import string
+from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
+import multiprocessing
 
-from temporalio import activity
+from worker.config.config import TemporalConfig
+from temporalio import activity, workflow
 from temporalio.client import Client
-from temporalio.worker import Worker
+from temporalio.worker import Worker, SharedStateManager
 
 task_queue = "say-hello-task-queue"
 workflow_name = "say-hello-workflow"
 activity_name = "say-hello-activity"
+
+
+@workflow.defn(name=workflow_name)
+class SayHelloWorkflow:
+
+    @workflow.run
+    async def run(self) -> None:
+        await workflow.execute_activity(
+            say_hello_activity,
+            "Blah",
+            start_to_close_timeout=timedelta(minutes=3)
+        )
 
 
 @activity.defn(name=activity_name)
@@ -17,21 +31,26 @@ async def say_hello_activity(name: str) -> str:
 
 
 async def run_worker():
-    # Create client to localhost on default namespace
-    client = await Client.connect("localhost:7233")
+    print('start worker')
+
+    temporal_config = TemporalConfig()
+    temporal_url = f"{temporal_config.get_server_host()}:{temporal_config.get_server_port()}"
+    print(f"Connecting to {temporal_url} ...")
+
+    client = await Client.connect(temporal_url)
     print('connected')
 
-    # Run activity worker
-    async with Worker(client, task_queue=task_queue, activities=[say_hello_activity]):
-        # Run the Go workflow
-        workflow_id = "".join(
-            random.choices(string.ascii_uppercase + string.digits, k=30)
-        )
-        result = await client.execute_workflow(
-            workflow_name, "Temporal", id=workflow_id, task_queue=task_queue
-        )
-        # Print out "Hello, Temporal!"
-        print(result)
+    worker = Worker(
+        client,
+        task_queue=task_queue,
+        workflows=[SayHelloWorkflow],
+        activities=[say_hello_activity],
+        activity_executor=ThreadPoolExecutor(10),
+        shared_state_manager=SharedStateManager.create_from_multiprocessing(multiprocessing.Manager()),
+        max_concurrent_activities=5,
+        max_concurrent_workflow_tasks=5
+    )
+    await worker.run()
 
 
 def main() -> None:

@@ -14,13 +14,7 @@ tools-venv: ## Creates Python Virtual Env for tooling scripts
 install-tool-dependencies: ## Installs tool dependencies
 	(cd tools; . .env/bin/activate; pip install -r requirements.txt)
 
-gen-otel-config: ## Generates OTEL configuration from template and environment variables
-	echo "# !!!! DO NOT EDIT !!!!!!!!!!!!!!!" > $(OTEL_APP_DIR)/otel-local-config.yaml
-	echo "# !!!! See Template File for Edits" >> $(OTEL_APP_DIR)/otel-local-config.yaml
-	echo "# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" >> $(OTEL_APP_DIR)/otel-local-config.yaml
-	envsubst < $(OTEL_APP_DIR)/otel-template.yaml >> $(OTEL_APP_DIR)/otel-local-config.yaml
-
-build-temporal-services: gen-otel-config ## Build all temporal services
+build-temporal-services: ## Build all temporal services
 	docker compose build
 
 #######################################################
@@ -36,10 +30,6 @@ generate-migrations: ## Generates flyway migrations from temporal admin
 migrate-db: ## Runs flyway db migrations against Postgres
 	docker compose up flyway-migrations
 
-migrate-scratch-db: ## Runs temporal admin migrations against Postgres
-	docker compose run --entrypoint "pg-migrate-db.sh" temporal-admin-tools
-
-
 #######################################################
 ######## Service Initialization Commands ##############
 #######################################################
@@ -47,16 +37,25 @@ migrate-scratch-db: ## Runs temporal admin migrations against Postgres
 init-postgres-db:  ## Starts Postgres Database & runs database migrations
 	docker compose up -d --wait postgresql
 
-init-temporal-services: init-postgres-db migrate-db ## Start all temporal services
+init-temporal-services: init-postgres-db migrate-db ## Start supporting temporal services
 	docker compose up server-otel-collector temporal-server temporal-ui
 
 start-native-worker: ## Starts Native Temporal worker
 	cd applications/worker; poetry run temporal-worker
 
+start-docker-worker: ## Starts Temporal worker in docker
+	docker compose up worker
+
+start-all-detached: ## Starts all docker containers in detached mode
+	docker compose up -d
+
 
 #######################################################
 ######## Project Clean-Up Commands ####################
 #######################################################
+
+stop-all: ## Stop all docker containers
+	docker compose down
 
 wipe-generated-migrations: ## Delete all generated migrations
 	rm applications/flyway/sql-migrations/*.sql
