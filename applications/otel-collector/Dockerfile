@@ -19,6 +19,6 @@ COPY generate-otel-config.sh generate-otel-config.sh
 RUN /bin/sh ./generate-otel-config.sh "/config"
 
 # Start release stage and Copy all generated configuration files in
-FROM otel/opentelemetry-collector-contrib:latest AS release
+FROM otel/opentelemetry-collector-contrib:0.109.0 AS release
 
 COPY --from=build /config/*.yaml .
