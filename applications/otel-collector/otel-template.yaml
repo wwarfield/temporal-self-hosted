@@ -24,7 +24,7 @@ receivers:
         #       regex: '.*grpc_io.*'
         #       action: drop
         - job_name: 'temporalcol'
-          scrape_interval: 10s
+          scrape_interval: 60s
           static_configs:
             - targets: ["$OTEL_SCRAPE_TARGET"]
           metrics_path: "/metrics"
@@ -42,10 +42,10 @@ exporters:
 service:
   extensions: [basicauth/otlp]
 
-  telemetry:
-    metrics:
-      address: 0.0.0.0:8888
-      level: detailed
+  # telemetry:
+  #   metrics:
+  #     address: 0.0.0.0:8888
+  #     level: detailed
   pipelines:
     metrics:
       receivers: [prometheus]

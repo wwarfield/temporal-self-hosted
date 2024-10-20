@@ -3,8 +3,6 @@
 # application can be deployed to
 # The relevant config file should be set be defining the PYYAML_CONFIG environment variable
 
-# Additionally each value in the configuration file can be overriden by environment values when
-# necessary
 temporal:
 
   # Temporal Server Connection Settings
@@ -14,3 +12,8 @@ temporal:
 
     # Port Name of temporal server/frontend Gateway
     port: 7233
+
+  metrics:
+    # Enable Prometheus metrics endpoint
+    enabled: false
+    bind_address: '0.0.0.0:9000'

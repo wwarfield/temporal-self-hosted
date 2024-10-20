@@ -44,7 +44,7 @@ start-native-worker: ## Starts Native Temporal worker
 	cd applications/worker; poetry run temporal-worker
 
 start-docker-worker: ## Starts Temporal worker in docker
-	docker compose up worker
+	docker compose up worker worker-otel-collector
 
 start-all-detached: ## Starts all docker containers in detached mode
 	docker compose up -d

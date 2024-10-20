@@ -25,3 +25,9 @@ class TemporalConfig(BaseConfig):
 
     def get_server_port(self) -> str:
         return self.temporal_config['server']['port']
+
+    def is_metrics_enabled(self) -> bool:
+        return self.temporal_config['metrics']['enabled']
+
+    def get_metrics_bind_address(self) -> str:
+        return self.temporal_config['metrics']['bind_address']
