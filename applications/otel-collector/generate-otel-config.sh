@@ -38,7 +38,7 @@ write_file() {
 }
 
 template_src=${OTEL_APP_DIR}/otel-template.yaml
-docker_server_dest=${OTEL_APP_DIR}/otel-server-config-docker.yaml
 
 
-write_file ${template_src} ${docker_server_dest} "temporal-server:4333"
+write_file ${template_src} "${OTEL_APP_DIR}/otel-server-config-docker.yaml" "temporal-server:4333"
+write_file ${template_src} "${OTEL_APP_DIR}/otel-worker-config-docker.yaml" "worker:9000"

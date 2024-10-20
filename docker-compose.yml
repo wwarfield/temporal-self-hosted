@@ -55,6 +55,8 @@ services:
       context: applications/worker
     environment:
       - PYYAML_CONFIG=worker/config/docker.yaml
+    ports:
+      - 9000:9000 # expose prometheus metrics endpoint
     depends_on:
       - temporal-server
     networks:
@@ -92,8 +94,30 @@ services:
       - temporal-network
 
   # OTEL Collector for metrics emitted from temporal-server
-  server-otel-collector:
-    container_name: server-otel-collector
+  # server-otel-collector:
+  #   container_name: server-otel-collector
+  #   build:
+  #     context: applications/otel-collector
+  #     args:
+  #       - OTEL_GRAFANA_INSTANCE_ID=${OTEL_GRAFANA_INSTANCE_ID}
+  #       - OTEL_GRAFANA_API_TOKEN=${OTEL_GRAFANA_API_TOKEN}
+  #       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+  #   environment:
+  #     - OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
+  #     - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+  #   command:
+  #     - --config=otel-server-config-docker.yaml
+  #   ports:
+  #     - 4317:4317
+  #     - 8888:8888
+  #   depends_on:
+  #     - temporal-server
+  #   networks:
+  #     - temporal-network
+
+# OTEL Collector for metrics emitted from the worker
+  worker-otel-collector:
+    container_name: worker-otel-collector
     build:
       context: applications/otel-collector
       args:
@@ -104,12 +128,10 @@ services:
       - OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
       - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
     command:
-      - --config=otel-server-config-docker.yaml
-    ports:
-      - 4317:4317
-      - 8888:8888
+      - --config=otel-worker-config-docker.yaml
+      - --feature-gates=-component.UseLocalHostAsDefaultHost
     depends_on:
-      - temporal-server
+      - worker
     networks:
       - temporal-network
 

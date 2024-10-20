@@ -22,6 +22,3 @@ RUN /bin/sh ./generate-otel-config.sh "/config"
 FROM otel/opentelemetry-collector-contrib:latest AS release
 
 COPY --from=build /config/*.yaml .
-
-# Run the collector
-CMD ["--feature-gates=-component.UseLocalHostAsDefaultHost"]
